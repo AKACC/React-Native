@@ -78,11 +78,12 @@ export default class indexContent extends Component {
 
         modalVisible: false,
 
+        submitFilter: false,
 
       };
       var optionLabel = [];
       this._setSearchText = this._setSearchText.bind(this);
-      //this.onSearchPressed = this.onSearchPressed.bind(this);
+
 
 
   }
@@ -184,56 +185,52 @@ export default class indexContent extends Component {
         return note.search(text) !== -1;
       });
   }
-  //_setModalVisible(visible){}
-  //_filteredDrv(){}
-//  _renderDrvFilter(){}
-_renderHeader(){
+  _renderHeader(){
 
-    var area = this.state.selectedOption;
-  if(area){
-    return(
+      var area = this.state.selectedOption;
+    if(area){
+      return(
 
-      <View style={{height:45,alignItems:'center', justifyContent:'center'}}>
-          <Heading label={area} />
-      </View>
-    )
-  }else{
-    return(
-      <View></View>
+        <View style={{height:45,alignItems:'center', justifyContent:'center'}}>
+            <Heading label={area} />
+        </View>
+      )
+    }else{
+      return(
+        <View></View>
+      )
+    }
+  }
+  _onRefresh() {
+    this.setState({refreshing: true});
+
+    dataSource.fetchFeed((result)=>{
+              if(result){
+
+                this.setState({
+                  dataSource:this.state.dataSource.cloneWithRows(result.ea_data),
+                  refreshing: false,
+                  selectedOption:"",
+
+
+                })
+              }
+          }
     )
   }
-}
-_onRefresh() {
-  this.setState({refreshing: true});
 
-  dataSource.fetchFeed((result)=>{
-            if(result){
-
-              this.setState({
-                dataSource:this.state.dataSource.cloneWithRows(result.ea_data),
-                refreshing: false,
-                selectedOption:"",
-
-
-              })
-            }
-        }
-  )
-}
-
-    _filteredDrv(){
-
+  _filteredDrv(){
       var zone = Number(this.state.selectedZone);
       // console.log(filter(this.state.searchSource,{'zone':Number(this.state.selectedZone)}))
       this.setState({
           dataSource:this.state.dataSource.cloneWithRows(filter(this.state.searchSource,{'zone':Number(this.state.selectedZone)})),
           modalVisible: false,
           showProgress:false,
-
+          submitFilter:true,
       })
-      this.props.navigator.pop();
-    }
-    _renderOption(option, selected, onSelect, index){
+
+  }
+  _renderOption(option, selected, onSelect, index){
           var option = option.label;
 
           const style = selected ? { fontWeight: 'bold'} : {};
@@ -243,28 +240,28 @@ _onRefresh() {
               <View><Text style={style}>{option}</Text></View>
             </TouchableWithoutFeedback>
           );
-        }
-      _setSelectedOption(selectedOption){
-            console.log(selectedOption)
-            var selectedArea = selectedOption.label;
-            var selectedZone = selectedOption.zone;
+  }
+  _setSelectedOption(selectedOption){
+          console.log(selectedOption)
+          var selectedArea = selectedOption.label;
+          var selectedZone = selectedOption.zone;
 
-             this.setState({
-               selectedOption:selectedArea,
-               selectedZone:selectedZone,
-             });
-    }
-    _setModalVisible(visible) {
-        this.setState({modalVisible: visible});
+           this.setState({
+             selectedOption:selectedArea,
+             selectedZone:selectedZone,
+             submitFilter: false,
+           });
+  }
+  _setModalVisible(visible) {
+      this.setState({modalVisible: visible});
 
-    }
-    _renderContainer(optionNodes){
-       return <View>{optionNodes}</View>;
-    }
-    _renderHeader(){
-
-        var area = this.state.selectedOption;
-      if(area){
+  }
+  _renderContainer(optionNodes){
+     return <View>{optionNodes}</View>;
+  }
+  _renderHeader(){
+      var area = this.state.selectedOption;
+      if(this.state.submitFilter){
         return(
 
           <View style={{height:45,alignItems:'center', justifyContent:'center'}}>
@@ -330,7 +327,7 @@ _onRefresh() {
 
                    <View style={styles.buttonView}>
                        <View >
-                         <TouchableOpacity onPress={()=>this._filteredDrv() } style={[styles.button,{backgroundColor:'#48bbec'}]}>
+                         <TouchableOpacity onPress={()=>this._filteredDrv(this.state.selectedOption) } style={[styles.button,{backgroundColor:'#48bbec'}]}>
                              <Text style={{fontSize:20,fontWeight:'bold', color:'white',textAlign:'center'}}>
                                  修改
                              </Text>
@@ -357,15 +354,8 @@ _onRefresh() {
       )
     }
       return(
-
-
-
-
           <View style={styles.container}>
               <View style={{backgroundColor:'ghostwhite',paddingBottom:50}}>
-
-
-
                       <View style={styles.button}>
 
                           <TouchableOpacity onPress={()=>this._setModalVisible(true)} style={[styles.button,{backgroundColor:'#48bbec'}]}>
